@@ -4,44 +4,12 @@ import (
 	"bytes"
 	"fmt"
 	"go/token"
-	"html/template"
 	"log"
-	"strings"
-	"unsafe"
+	"text/template"
 
 	"github.com/cznic/cc"
 	"github.com/cznic/xc"
 )
-
-func model() *cc.Model {
-	p := int(unsafe.Sizeof(uintptr(0)))
-	i := int(unsafe.Sizeof(int(0)))
-	return &cc.Model{
-		Items: map[cc.Kind]cc.ModelItem{
-			cc.Ptr:               {Size: p, Align: p, StructAlign: p},
-			cc.UintPtr:           {Size: p, Align: p, StructAlign: p},
-			cc.Void:              {Size: 0, Align: 1, StructAlign: 1},
-			cc.Char:              {Size: 1, Align: 1, StructAlign: 1},
-			cc.SChar:             {Size: 1, Align: 1, StructAlign: 1},
-			cc.UChar:             {Size: 1, Align: 1, StructAlign: 1},
-			cc.Short:             {Size: 2, Align: 2, StructAlign: 2},
-			cc.UShort:            {Size: 2, Align: 2, StructAlign: 2},
-			cc.Int:               {Size: 4, Align: 4, StructAlign: 4},
-			cc.UInt:              {Size: 4, Align: 4, StructAlign: 4},
-			cc.Long:              {Size: i, Align: i, StructAlign: i},
-			cc.ULong:             {Size: i, Align: i, StructAlign: i},
-			cc.LongLong:          {Size: 8, Align: 8, StructAlign: 8},
-			cc.ULongLong:         {Size: 8, Align: 8, StructAlign: 8},
-			cc.Float:             {Size: 4, Align: 4, StructAlign: 4},
-			cc.Double:            {Size: 8, Align: 8, StructAlign: 8},
-			cc.LongDouble:        {Size: 8, Align: 8, StructAlign: 8},
-			cc.Bool:              {Size: 1, Align: 1, StructAlign: 1},
-			cc.FloatComplex:      {Size: 8, Align: 8, StructAlign: 8},
-			cc.DoubleComplex:     {Size: 16, Align: 16, StructAlign: 16},
-			cc.LongDoubleComplex: {Size: 16, Align: 16, StructAlign: 16},
-		},
-	}
-}
 
 type TypeKey struct {
 	IsPointer bool
@@ -58,21 +26,20 @@ type Declaration struct {
 	Declarator  *cc.Declarator
 }
 
-func (d Declaration) Format(f fmt.State, c rune) {
-	if !f.Flag('#') {
-		fmt.Fprintf(f, "Declaration{%v}", d.Name)
-		return
-	}
-	fmt.Fprintf(f, "func %v(", d.Name)
-	for i, param := range d.Parameters() {
-		log.Printf("PARAM %v TYPE %v", param.Name(), isConstType(param.Parameter))
-		fmt.Fprintf(f, "%v %v", param.Name(), param.Type())
-		if i < len(d.CParameters) {
-			fmt.Fprint(f, ", ")
-		}
-	}
-	fmt.Fprintf(f, ") %v", d.Return)
-}
+// func (d Declaration) Format(f fmt.State, c rune) {
+// 	if !f.Flag('#') {
+// 		fmt.Fprintf(f, "Declaration{%v}", d.Name)
+// 		return
+// 	}
+// 	fmt.Fprintf(f, "func %v(", d.Name)
+// 	for i, param := range d.Parameters() {
+// 		fmt.Fprintf(f, "%v %v", param.Name(), param.Type())
+// 		if i < len(d.CParameters) {
+// 			fmt.Fprint(f, ", ")
+// 		}
+// 	}
+// 	fmt.Fprintf(f, ") %v", d.Return)
+// }
 
 // Position returns the token position of the declaration.
 func (d Declaration) Position() token.Position { return xc.FileSet.Position(d.Pos) }
@@ -188,6 +155,14 @@ func GoTypeForEnum(typ cc.Type, name string, types ...map[string]*template.Templ
 	panic(fmt.Sprintf("unknown type: %+v", typ))
 }
 
-func isConstType(a cc.Parameter) bool {
-	return strings.HasPrefix(a.Type.String(), "const")
+func IsConstType(a cc.Type) bool {
+	return a.Specifier().IsConst()
+}
+
+func IsPointer(a cc.Type) bool {
+	return a.RawDeclarator().PointerOpt != nil
+}
+
+func IsVoid(a cc.Type) bool {
+	return a.String() == "void"
 }

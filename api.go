@@ -108,20 +108,3 @@ func TypeDefOf(t cc.Type) (name string) {
 	id := t.Declarator().RawSpecifier().TypedefName()
 	return string(xc.Dict.S(id))
 }
-
-func liftParam(p cc.Parameter) Parameter {
-	retVal := Parameter{
-		Parameter: p,
-	}
-	tdid := p.Type.Declarator().RawSpecifier().TypedefName()
-	retVal.TypeDefName = string(xc.Dict.S(tdid))
-	return retVal
-}
-
-func liftParams(ps []cc.Parameter) []Parameter {
-	retVal := make([]Parameter, len(ps))
-	for i, p := range ps {
-		retVal[i] = liftParam(p)
-	}
-	return retVal
-}
