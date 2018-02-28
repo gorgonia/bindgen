@@ -2,6 +2,8 @@ package bindgen
 
 import (
 	"fmt"
+	"io"
+	"os"
 	"sort"
 
 	"github.com/cznic/cc"
@@ -36,6 +38,7 @@ unsigned long long __builtin_bswap64 (unsigned long long x);
 	)
 }
 
+// Get returns a list of declarations given the filter function
 func Get(t *cc.TranslationUnit, filter FilterFunc) ([]Declaration, error) {
 	var decls []Declaration
 	for ; t != nil; t = t.TranslationUnit {
@@ -98,15 +101,70 @@ func Get(t *cc.TranslationUnit, filter FilterFunc) ([]Declaration, error) {
 	return decls, nil
 }
 
+// NameOf returns the name of a C declarator
 func NameOf(decl *cc.Declarator) (name string) {
 	var id int
 	id, _ = decl.Identifier()
 	name = string(xc.Dict.S(id))
-	// id, bindings := decl.Identifier()
 	return
 }
 
+// TypeDefOf returns the type def name of a type. If a type is not a typedef'd type, it returns "".
 func TypeDefOf(t cc.Type) (name string) {
 	id := t.Declarator().RawSpecifier().TypedefName()
 	return string(xc.Dict.S(id))
+}
+
+// Explore is a function used to iterate quickly on a project to translate C functions/types to Go functions/types
+func Explore(filename string, filters ...FilterFunc) error {
+	pre := func(w io.Writer, a string) {}
+	format := func(w io.Writer, a string) { fmt.Fprintf(w, "%v\n", a) }
+	post := func(w io.Writer, a string) { fmt.Fprintln(w) }
+
+	return exploration(os.Stdout, filename, pre, format, post, filters...)
+}
+
+// GenIgnored generates go code for a const data structure that contains all the ignored functions/types
+//
+// Filename indicates what file needs to be parsed, not the output file.
+func GenIgnored(buf io.Writer, filename string, filters ...FilterFunc) error {
+	pre := func(w io.Writer, a string) { fmt.Fprint(w, "var ignored = map[string]struct{}{\n") }
+	format := func(w io.Writer, a string) { fmt.Fprintf(w, "%q:{},\n", a) }
+	post := func(w io.Writer, a string) { fmt.Fprint(w, "}\n") }
+
+	return exploration(buf, filename, pre, format, post, filters...)
+}
+
+// GenNameMap generates go code representing a name mapping scheme
+//
+// filename indicates the file to be parsed, varname indicates the name of the variable.
+// fn is the transformation function.
+func GenNameMap(buf io.Writer, filename, varname string, fn func(string) string, filter FilterFunc) error {
+	pre := func(w io.Writer, a string) { fmt.Fprintf(w, "var %v = map[string]string{}{\n", varname) }
+	format := func(w io.Writer, a string) {
+		fmt.Fprintf(w, "%q: %q\n", a, fn(a))
+	}
+	post := func(w io.Writer, a string) { fmt.Fprint(w, "}\n") }
+	return exploration(buf, filename, pre, format, post, filter)
+}
+
+func exploration(w io.Writer, filename string, pre, format, post func(io.Writer, string), filters ...FilterFunc) error {
+	t, err := Parse(Model(), filename)
+	if err != nil {
+		return err
+	}
+
+	for _, f := range filters {
+		decls, err := Get(t, f)
+		if err != nil {
+			return err
+		}
+
+		pre(w, "")
+		for _, d := range decls {
+			format(w, d.Name)
+		}
+		post(w, "")
+	}
+	return nil
 }
