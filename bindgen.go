@@ -10,10 +10,20 @@ import (
 type TypeKey struct {
 	IsPointer bool
 	Kind      cc.Kind
+	Name      string
 }
 
-// Declaration is a description of a C  declaration.
-type Declaration struct {
+// Declaration is anything with a position
+type Declaration interface {
+	Position() token.Position
+}
+
+type Namer interface {
+	Name() string
+}
+
+// CSignature is a description of a C  declaration.
+type CSignature struct {
 	Pos         token.Pos
 	Name        string
 	Return      cc.Type
@@ -23,10 +33,10 @@ type Declaration struct {
 }
 
 // Position returns the token position of the declaration.
-func (d Declaration) Position() token.Position { return xc.FileSet.Position(d.Pos) }
+func (d *CSignature) Position() token.Position { return xc.FileSet.Position(d.Pos) }
 
 // Parameters returns the declaration's CParameters converted to a []Parameter.
-func (d *Declaration) Parameters() []Parameter {
+func (d *CSignature) Parameters() []Parameter {
 	p := make([]Parameter, len(d.CParameters))
 	for i, c := range d.CParameters {
 		p[i] = Parameter{c, TypeDefOf(c.Type)}

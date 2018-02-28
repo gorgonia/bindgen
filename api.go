@@ -76,6 +76,7 @@ func Get(t *cc.TranslationUnit, filter FilterFunc) ([]Declaration, error) {
 		params, variadic := declarator.Type.Parameters()
 
 		var retType cc.Type
+		var decl *CSignature
 		switch declarator.Type.Kind() {
 		case cc.Function:
 			// raw := declarator.Type.RawDeclarator()
@@ -83,17 +84,18 @@ func Get(t *cc.TranslationUnit, filter FilterFunc) ([]Declaration, error) {
 			// log.Println("SPECIFIER", raw.DirectDeclarator.ParameterTypeList.ParameterList.ParameterDeclaration.DeclarationSpecifiers.String())
 
 			retType = declarator.Type.Result()
+			decl = &CSignature{
+				Pos:         declarator.Pos(),
+				Name:        name,
+				Return:      retType,
+				CParameters: params,
+				Variadic:    variadic,
+				Declarator:  declarator,
+			}
 		case cc.Enum:
 			// do nothing
 		}
-		decls = append(decls, Declaration{
-			Pos:         declarator.Pos(),
-			Name:        name,
-			Return:      retType,
-			CParameters: params,
-			Variadic:    variadic,
-			Declarator:  declarator,
-		})
+		decls = append(decls, decl)
 	}
 
 	sort.Sort(byPosition(decls))
@@ -102,11 +104,19 @@ func Get(t *cc.TranslationUnit, filter FilterFunc) ([]Declaration, error) {
 }
 
 // NameOf returns the name of a C declarator
-func NameOf(decl *cc.Declarator) (name string) {
-	var id int
-	id, _ = decl.Identifier()
-	name = string(xc.Dict.S(id))
-	return
+func NameOf(any interface{}) (name string) {
+	switch a := any.(type) {
+	case Namer:
+		return a.Name()
+	case *cc.Declarator:
+		var id int
+		id, _ = a.Identifier()
+		return string(xc.Dict.S(id))
+	case *CSignature:
+		return a.Name
+	default:
+		return ""
+	}
 }
 
 // TypeDefOf returns the type def name of a type. If a type is not a typedef'd type, it returns "".
@@ -162,7 +172,7 @@ func exploration(w io.Writer, filename string, pre, format, post func(io.Writer,
 
 		pre(w, "")
 		for _, d := range decls {
-			format(w, d.Name)
+			format(w, NameOf(d))
 		}
 		post(w, "")
 	}

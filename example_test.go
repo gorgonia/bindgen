@@ -64,7 +64,7 @@ func functions(t *cc.TranslationUnit) ([]bindgen.Declaration, error) {
 	return bindgen.Get(t, filter)
 }
 
-func decl2GoSig(d bindgen.Declaration) *GoSignature {
+func decl2GoSig(d *bindgen.CSignature) *GoSignature {
 	var params []Param
 	sig := new(GoSignature)
 outer:
@@ -133,7 +133,7 @@ func Example_simple() {
 	fns, err := functions(t)
 	handleErr(err)
 	for _, fn := range fns {
-		fmt.Println(decl2GoSig(fn))
+		fmt.Println(decl2GoSig(fn.(*bindgen.CSignature)))
 	}
 
 	// Output:
