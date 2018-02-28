@@ -11,6 +11,8 @@ import (
 // FilterFunc is a function to filter types
 type FilterFunc func(*cc.Declarator) bool
 
+// Parse parses with the given model, as well as having some hard coded predefined definitions that are useful
+// for translating C to Go code
 func Parse(model *cc.Model, paths ...string) (*cc.TranslationUnit, error) {
 	predefined, includePaths, sysIncludePaths, err := cc.HostConfig()
 	if err != nil {
