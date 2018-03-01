@@ -2,15 +2,23 @@ package bindgen
 
 import (
 	"go/token"
+	"text/template"
 
 	"github.com/cznic/cc"
 	"github.com/cznic/xc"
 )
 
+// TypeKey is typically used as a representation of a C type that can  be used as a key in a map
 type TypeKey struct {
 	IsPointer bool
 	Kind      cc.Kind
 	Name      string
+}
+
+// Template represents a template of conversion. An optional InContext() function may be provided to check if the template needs to be executed
+type Template struct {
+	*template.Template
+	InContext func() bool
 }
 
 // Declaration is anything with a position
@@ -62,28 +70,3 @@ func (p *Parameter) Kind() cc.Kind { return p.Parameter.Type.Kind() }
 // Elem returns the pointer type of a pointer parameter or the element type of an
 // array parameter.
 func (p *Parameter) Elem() cc.Type { return p.Parameter.Type.Element() }
-
-type byPosition []Declaration
-
-func (d byPosition) Len() int { return len(d) }
-func (d byPosition) Less(i, j int) bool {
-	iPos := d[i].Position()
-	jPos := d[j].Position()
-	if iPos.Filename == jPos.Filename {
-		return iPos.Line < jPos.Line
-	}
-	return iPos.Filename < jPos.Filename
-}
-func (d byPosition) Swap(i, j int) { d[i], d[j] = d[j], d[i] }
-
-func IsConstType(a cc.Type) bool {
-	return a.Specifier().IsConst()
-}
-
-func IsPointer(a cc.Type) bool {
-	return a.RawDeclarator().PointerOpt != nil
-}
-
-func IsVoid(a cc.Type) bool {
-	return a.String() == "void"
-}
