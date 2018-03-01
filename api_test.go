@@ -24,7 +24,13 @@ func ExampleExplore() {
 		}
 		return false
 	}
-	if err := Explore("testdata/dummy.h", functions, enums); err != nil {
+	others := func(decl *cc.Declarator) bool {
+		if decl.Type.Kind() == cc.Ptr || decl.Type.Kind() == cc.Struct {
+			return true
+		}
+		return false
+	}
+	if err := Explore("testdata/dummy.h", functions, enums, others); err != nil {
 		panic(err)
 	}
 
@@ -38,6 +44,10 @@ func ExampleExplore() {
 	// funcCtx
 	//
 	// error
+	// fntype_t
+	//
+	// dummy_t
+	// dummy2_t
 }
 
 func ExampleGenIgnored() {

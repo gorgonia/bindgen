@@ -70,3 +70,22 @@ func (p *Parameter) Kind() cc.Kind { return p.Parameter.Type.Kind() }
 // Elem returns the pointer type of a pointer parameter or the element type of an
 // array parameter.
 func (p *Parameter) Elem() cc.Type { return p.Parameter.Type.Element() }
+
+// Enum is a description of a  C enum
+type Enum struct {
+	Pos        token.Pos
+	Name       string
+	Type       cc.Type
+	Declarator *cc.Declarator
+}
+
+func (d *Enum) Position() token.Position { return xc.FileSet.Position(d.Pos) }
+
+// Other represents other types that are not part of the "batteries included"ness of this package
+type Other struct {
+	Pos        token.Pos
+	Name       string
+	Declarator *cc.Declarator
+}
+
+func (d *Other) Position() token.Position { return xc.FileSet.Position(d.Pos) }

@@ -76,13 +76,9 @@ func Get(t *cc.TranslationUnit, filter FilterFunc) ([]Declaration, error) {
 		params, variadic := declarator.Type.Parameters()
 
 		var retType cc.Type
-		var decl *CSignature
+		var decl Declaration
 		switch declarator.Type.Kind() {
 		case cc.Function:
-			// raw := declarator.Type.RawDeclarator()
-			// extractParams(raw)
-			// log.Println("SPECIFIER", raw.DirectDeclarator.ParameterTypeList.ParameterList.ParameterDeclaration.DeclarationSpecifiers.String())
-
 			retType = declarator.Type.Result()
 			decl = &CSignature{
 				Pos:         declarator.Pos(),
@@ -93,7 +89,18 @@ func Get(t *cc.TranslationUnit, filter FilterFunc) ([]Declaration, error) {
 				Declarator:  declarator,
 			}
 		case cc.Enum:
-			// do nothing
+			decl = &Enum{
+				Pos:        declarator.Pos(),
+				Name:       name,
+				Type:       declarator.Type,
+				Declarator: declarator,
+			}
+		default:
+			decl = &Other{
+				Pos:        declarator.Pos(),
+				Name:       name,
+				Declarator: declarator,
+			}
 		}
 		decls = append(decls, decl)
 	}
@@ -113,6 +120,10 @@ func NameOf(any interface{}) (name string) {
 		id, _ = a.Identifier()
 		return string(xc.Dict.S(id))
 	case *CSignature:
+		return a.Name
+	case *Enum:
+		return a.Name
+	case *Other:
 		return a.Name
 	default:
 		return ""
