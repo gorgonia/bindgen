@@ -159,11 +159,16 @@ func GenIgnored(buf io.Writer, filename string, filters ...FilterFunc) error {
 // GenNameMap generates go code representing a name mapping scheme
 //
 // filename indicates the file to be parsed, varname indicates the name of the variable.
-// fn is the transformation function.
-func GenNameMap(buf io.Writer, filename, varname string, fn func(string) string, filter FilterFunc) error {
-	pre := func(w io.Writer, a string) { fmt.Fprintf(w, "var %v = map[string]string{}{\n", varname) }
+// 	- fn is the transformation function.
+// 	- init indicates if the mapping should be generated in a func init(){}
+func GenNameMap(buf io.Writer, filename, varname string, fn func(string) string, filter FilterFunc, init bool) error {
+	varstr := "var "
+	if init {
+		varstr = ""
+	}
+	pre := func(w io.Writer, a string) { fmt.Fprintf(w, "%v%v = map[string]string{\n", varstr, varname) }
 	format := func(w io.Writer, a string) {
-		fmt.Fprintf(w, "%q: %q\n", a, fn(a))
+		fmt.Fprintf(w, "%q: %q,\n", a, fn(a))
 	}
 	post := func(w io.Writer, a string) { fmt.Fprint(w, "}\n") }
 	return exploration(buf, filename, pre, format, post, filter)

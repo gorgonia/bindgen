@@ -92,20 +92,57 @@ func ExampleGenNameMap() {
 		return strings.ToTitle(strings.TrimPrefix(a, "func"))
 	}
 	var buf bytes.Buffer
-	if err := GenNameMap(&buf, "testdata/dummy.h", "m", trans, functions); err != nil {
+	if err := GenNameMap(&buf, "testdata/dummy.h", "m", trans, functions, false); err != nil {
 		panic(err)
 	}
 	fmt.Println(buf.String())
 
 	// Output:
-	// var m = map[string]string{}{
-	// "func1i": "1I"
-	// "func1f": "1F"
-	// "func1fp": "1FP"
-	// "func2i": "2I"
-	// "func2f": "2F"
-	// "funcErr": "ERR"
-	// "funcCtx": "CTX"
+	// var m = map[string]string{
+	// "func1i": "1I",
+	// "func1f": "1F",
+	// "func1fp": "1FP",
+	// "func2i": "2I",
+	// "func2f": "2F",
+	// "funcErr": "ERR",
+	// "funcCtx": "CTX",
+	// }
+
+}
+
+func ExampleGenNameMap_2() {
+	functions := func(decl *cc.Declarator) bool {
+		if !strings.HasPrefix(NameOf(decl), "func") {
+			return false
+		}
+		if decl.Type.Kind() == cc.Function {
+			return true
+		}
+		return false
+	}
+
+	trans := func(a string) string {
+		return strings.ToTitle(strings.TrimPrefix(a, "func"))
+	}
+	var buf bytes.Buffer
+	fmt.Fprintln(&buf, "func init() {")
+	if err := GenNameMap(&buf, "testdata/dummy.h", "m", trans, functions, true); err != nil {
+		panic(err)
+	}
+	fmt.Fprintln(&buf, "}")
+	fmt.Println(buf.String())
+
+	// Output:
+	// func init() {
+	// m = map[string]string{
+	// "func1i": "1I",
+	// "func1f": "1F",
+	// "func1fp": "1FP",
+	// "func2i": "2I",
+	// "func2f": "2F",
+	// "funcErr": "ERR",
+	// "funcCtx": "CTX",
+	// }
 	// }
 
 }
