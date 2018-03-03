@@ -137,23 +137,23 @@ func TypeDefOf(t cc.Type) (name string) {
 }
 
 // Explore is a function used to iterate quickly on a project to translate C functions/types to Go functions/types
-func Explore(filename string, filters ...FilterFunc) error {
+func Explore(t *cc.TranslationUnit, filters ...FilterFunc) error {
 	pre := func(w io.Writer, a string) {}
 	format := func(w io.Writer, a string) { fmt.Fprintf(w, "%v\n", a) }
 	post := func(w io.Writer, a string) { fmt.Fprintln(w) }
 
-	return exploration(os.Stdout, filename, pre, format, post, filters...)
+	return exploration(os.Stdout, t, pre, format, post, filters...)
 }
 
 // GenIgnored generates go code for a const data structure that contains all the ignored functions/types
 //
 // Filename indicates what file needs to be parsed, not the output file.
-func GenIgnored(buf io.Writer, filename string, filters ...FilterFunc) error {
+func GenIgnored(buf io.Writer, t *cc.TranslationUnit, filters ...FilterFunc) error {
 	pre := func(w io.Writer, a string) { fmt.Fprint(w, "var ignored = map[string]struct{}{\n") }
 	format := func(w io.Writer, a string) { fmt.Fprintf(w, "%q:{},\n", a) }
 	post := func(w io.Writer, a string) { fmt.Fprint(w, "}\n") }
 
-	return exploration(buf, filename, pre, format, post, filters...)
+	return exploration(buf, t, pre, format, post, filters...)
 }
 
 // GenNameMap generates go code representing a name mapping scheme
@@ -161,7 +161,7 @@ func GenIgnored(buf io.Writer, filename string, filters ...FilterFunc) error {
 // filename indicates the file to be parsed, varname indicates the name of the variable.
 // 	- fn is the transformation function.
 // 	- init indicates if the mapping should be generated in a func init(){}
-func GenNameMap(buf io.Writer, filename, varname string, fn func(string) string, filter FilterFunc, init bool) error {
+func GenNameMap(buf io.Writer, t *cc.TranslationUnit, varname string, fn func(string) string, filter FilterFunc, init bool) error {
 	varstr := "var "
 	if init {
 		varstr = ""
@@ -171,15 +171,10 @@ func GenNameMap(buf io.Writer, filename, varname string, fn func(string) string,
 		fmt.Fprintf(w, "%q: %q,\n", a, fn(a))
 	}
 	post := func(w io.Writer, a string) { fmt.Fprint(w, "}\n") }
-	return exploration(buf, filename, pre, format, post, filter)
+	return exploration(buf, t, pre, format, post, filter)
 }
 
-func exploration(w io.Writer, filename string, pre, format, post func(io.Writer, string), filters ...FilterFunc) error {
-	t, err := Parse(Model(), filename)
-	if err != nil {
-		return err
-	}
-
+func exploration(w io.Writer, t *cc.TranslationUnit, pre, format, post func(io.Writer, string), filters ...FilterFunc) error {
 	for _, f := range filters {
 		decls, err := Get(t, f)
 		if err != nil {

@@ -2,7 +2,9 @@ package bindgen
 
 import (
 	"fmt"
+	"strings"
 	"text/template"
+	"unicode"
 
 	"github.com/cznic/cc"
 )
@@ -48,3 +50,33 @@ func (d byPosition) Less(i, j int) bool {
 	return iPos.Filename < jPos.Filename
 }
 func (d byPosition) Swap(i, j int) { d[i], d[j] = d[j], d[i] }
+
+// Snake2Camel converts snake case to camel case. It's not particularly performant. Rather it's a quick and dirty function.
+func Snake2Camel(s string, exported bool) (retVal string) {
+	nextUpper := exported
+	for i, v := range s {
+		switch {
+		case unicode.IsNumber(v):
+			retVal += string(v)
+		case unicode.IsUpper(v):
+			if i == 0 && !nextUpper {
+				retVal += strings.ToLower(string(v))
+			} else {
+				retVal += string(v)
+			}
+		case unicode.IsLower(v):
+			if nextUpper {
+				retVal += strings.ToUpper(string(v))
+			} else {
+				retVal += string(v)
+			}
+		case v == '_':
+			nextUpper = true
+			continue
+		default:
+			retVal += string(v)
+		}
+		nextUpper = false
+	}
+	return
+}
