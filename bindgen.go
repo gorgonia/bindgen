@@ -24,6 +24,7 @@ type Template struct {
 // Declaration is anything with a position
 type Declaration interface {
 	Position() token.Position
+	Decl() *cc.Declarator
 }
 
 type Namer interface {
@@ -42,6 +43,7 @@ type CSignature struct {
 
 // Position returns the token position of the declaration.
 func (d *CSignature) Position() token.Position { return xc.FileSet.Position(d.Pos) }
+func (d *CSignature) Decl() *cc.Declarator     { return d.Declarator }
 
 // Parameters returns the declaration's CParameters converted to a []Parameter.
 func (d *CSignature) Parameters() []Parameter {
@@ -80,6 +82,7 @@ type Enum struct {
 }
 
 func (d *Enum) Position() token.Position { return xc.FileSet.Position(d.Pos) }
+func (d *Enum) Decl() *cc.Declarator     { return d.Declarator }
 
 // Other represents other types that are not part of the "batteries included"ness of this package
 type Other struct {
@@ -89,3 +92,4 @@ type Other struct {
 }
 
 func (d *Other) Position() token.Position { return xc.FileSet.Position(d.Pos) }
+func (d *Other) Decl() *cc.Declarator     { return d.Declarator }

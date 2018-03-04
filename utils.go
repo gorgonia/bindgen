@@ -80,3 +80,37 @@ func Snake2Camel(s string, exported bool) (retVal string) {
 	}
 	return
 }
+
+// LongestCommonPrefix takes a slice of strings, and finds the longest common prefix
+//
+// This function was taken from github.com/chewxy/lingo/corpus
+func LongestCommonPrefix(strs ...string) string {
+	switch len(strs) {
+	case 0:
+		return "" // idiots
+	case 1:
+		return strs[0]
+	}
+
+	min := strs[0]
+	max := strs[0]
+
+	for _, s := range strs[1:] {
+		switch {
+		case s < min:
+			min = s
+		case s > max:
+			max = s
+		}
+	}
+
+	for i := 0; i < len(min) && i < len(max); i++ {
+		if min[i] != max[i] {
+			return min[:i]
+		}
+	}
+
+	// In the case where lengths are not equal but all bytes
+	// are equal, min is the answer ("foo" < "foobar").
+	return min
+}
