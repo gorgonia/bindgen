@@ -3,6 +3,7 @@ package bindgen_test
 import (
 	"bytes"
 	"fmt"
+	"strings"
 
 	"github.com/cznic/cc"
 	"github.com/gorgonia/bindgen"
@@ -50,10 +51,15 @@ func Example_convertingEnums() {
 
 		// then write the const definitions:
 		// 	const(...)
+
 		for _, a := range e.Type.EnumeratorList() {
-			// this is a straightforwards mapping of the C defined name. The name is kept exactly the same
-			// in real life, you might not want this, (for example, you may not want to export the names, which are typically in all caps)
-			fmt.Fprintf(&buf, "%v %v = %v\n", string(a.DefTok.S()), enumMappings[tk], a.Value)
+			// this is a straightforwards mapping of the C defined name. The name is kept exactly the same, with a lowecase mapping
+			// in real life, you might not want this, (for example, you may not want to export the names, which are typically in all caps),
+			// or you might want different names
+
+			enumName := string(a.DefTok.S())
+			goName := strings.ToLower(enumName)
+			fmt.Fprintf(&buf, "%v %v = C.%v\n", goName, enumMappings[tk], enumName)
 		}
 		buf.Write([]byte(")\n"))
 	}
@@ -62,7 +68,7 @@ func Example_convertingEnums() {
 	// Output:
 	// type Status int
 	// const (
-	// SUCCESS Status = 0
-	// FAILURE Status = 1
+	// success Status = C.SUCCESS
+	// failure Status = C.FAILURE
 	// )
 }

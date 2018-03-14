@@ -15,6 +15,12 @@ type TypeKey struct {
 	Name      string
 }
 
+// ParamKey is a representtive of a param
+type ParamKey struct {
+	Name string
+	Type TypeKey
+}
+
 // Template represents a template of conversion. An optional InContext() function may be provided to check if the template needs to be executed
 type Template struct {
 	*template.Template
