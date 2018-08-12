@@ -79,6 +79,9 @@ func (p *Parameter) Kind() cc.Kind { return p.Parameter.Type.Kind() }
 // array parameter.
 func (p *Parameter) Elem() cc.Type { return p.Parameter.Type.Element() }
 
+// IsPointer returns true if the parameter represents a pointer
+func (p *Parameter) IsPointer() bool { return IsPointer(p.Parameter.Type) }
+
 // Enum is a description of a  C enum
 type Enum struct {
 	Pos        token.Pos
