@@ -3,7 +3,7 @@ package bindgen
 import (
 	"unsafe"
 
-	"github.com/cznic/cc"
+	"modernc.org/cc"
 )
 
 func Model() *cc.Model {

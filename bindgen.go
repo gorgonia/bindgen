@@ -4,8 +4,8 @@ import (
 	"go/token"
 	"text/template"
 
-	"github.com/cznic/cc"
-	"github.com/cznic/xc"
+	"modernc.org/cc"
+	"modernc.org/xc"
 )
 
 // TypeKey is typically used as a representation of a C type that can  be used as a key in a map

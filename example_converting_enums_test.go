@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/cznic/cc"
 	"github.com/gorgonia/bindgen"
+	"modernc.org/cc"
 )
 
 // genEnums represents a list of enums we want to generate

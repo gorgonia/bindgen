@@ -6,7 +6,7 @@ import (
 	"text/template"
 	"unicode"
 
-	"github.com/cznic/cc"
+	"modernc.org/cc"
 )
 
 // Pure "lifts" a string or *template.Template into a template

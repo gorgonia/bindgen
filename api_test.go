@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/cznic/cc"
+	"modernc.org/cc"
 )
 
 func ExampleExplore() {
@@ -30,7 +30,12 @@ func ExampleExplore() {
 		}
 		return false
 	}
-	if err := Explore("testdata/dummy.h", functions, enums, others); err != nil {
+	tu, err := Parse(Model(), "testdata/dummy.h")
+	if err != nil {
+		panic(err)
+	}
+
+	if err = Explore(tu, functions, enums, others); err != nil {
 		panic(err)
 	}
 
@@ -60,8 +65,13 @@ func ExampleGenIgnored() {
 		}
 		return false
 	}
+	tu, err := Parse(Model(), "testdata/dummy.h")
+	if err != nil {
+		panic(err)
+	}
+
 	var buf bytes.Buffer
-	if err := GenIgnored(&buf, "testdata/dummy.h", functions); err != nil {
+	if err := GenIgnored(&buf, tu, functions); err != nil {
 		panic(err)
 	}
 	fmt.Println(buf.String())
@@ -91,8 +101,13 @@ func ExampleGenNameMap() {
 	trans := func(a string) string {
 		return strings.ToTitle(strings.TrimPrefix(a, "func"))
 	}
+	tu, err := Parse(Model(), "testdata/dummy.h")
+	if err != nil {
+		panic(err)
+	}
+
 	var buf bytes.Buffer
-	if err := GenNameMap(&buf, "testdata/dummy.h", "m", trans, functions, false); err != nil {
+	if err := GenNameMap(&buf, tu, "m", trans, functions, false); err != nil {
 		panic(err)
 	}
 	fmt.Println(buf.String())
@@ -124,9 +139,14 @@ func ExampleGenNameMap_2() {
 	trans := func(a string) string {
 		return strings.ToTitle(strings.TrimPrefix(a, "func"))
 	}
+	tu, err := Parse(Model(), "testdata/dummy.h")
+	if err != nil {
+		panic(err)
+	}
+
 	var buf bytes.Buffer
 	fmt.Fprintln(&buf, "func init() {")
-	if err := GenNameMap(&buf, "testdata/dummy.h", "m", trans, functions, true); err != nil {
+	if err := GenNameMap(&buf, tu, "m", trans, functions, true); err != nil {
 		panic(err)
 	}
 	fmt.Fprintln(&buf, "}")

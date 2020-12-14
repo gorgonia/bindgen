@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/cznic/cc"
 	"github.com/gorgonia/bindgen"
+	"modernc.org/cc"
 )
 
 // GoSignature represents a Go signature

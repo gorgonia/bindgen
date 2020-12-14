@@ -6,8 +6,8 @@ import (
 	"os"
 	"sort"
 
-	"github.com/cznic/cc"
-	"github.com/cznic/xc"
+	"modernc.org/cc"
+	"modernc.org/xc"
 )
 
 // FilterFunc is a function to filter types
@@ -16,7 +16,7 @@ type FilterFunc func(*cc.Declarator) bool
 // Parse parses with the given model, as well as having some hard coded predefined definitions that are useful
 // for translating C to Go code
 func Parse(model *cc.Model, paths ...string) (*cc.TranslationUnit, error) {
-	predefined, includePaths, sysIncludePaths, err := cc.HostConfig()
+	predefined, includePaths, sysIncludePaths, err := cc.HostConfig("-I/usr/local/cuda/include")
 	if err != nil {
 		return nil, fmt.Errorf("binding: failed to get host config: %v", err)
 	}
