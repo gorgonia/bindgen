@@ -51,6 +51,13 @@ func (d byPosition) Less(i, j int) bool {
 }
 func (d byPosition) Swap(i, j int) { d[i], d[j] = d[j], d[i] }
 
+// byName is a sortable slice of Declarations
+type byName []Declaration
+
+func (ds byName) Len() int           { return len(ds) }
+func (ds byName) Less(i, j int) bool { return NameOf(ds[i].Decl()) < NameOf(ds[j].Decl()) }
+func (ds byName) Swap(i, j int)      { ds[i], ds[j] = ds[j], ds[i] }
+
 // Snake2Camel converts snake case to camel case. It's not particularly performant. Rather it's a quick and dirty function.
 func Snake2Camel(s string, exported bool) (retVal string) {
 	nextUpper := exported

@@ -166,3 +166,14 @@ func ExampleGenNameMap_2() {
 	// }
 
 }
+
+func Example_Advanced() {
+	_, err := Parse(Model(), "testdata/adv.h")
+	if err != nil {
+		panic(err)
+	}
+
+	// Output:
+	//
+
+}

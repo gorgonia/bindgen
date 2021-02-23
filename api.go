@@ -105,7 +105,7 @@ func Get(t *cc.TranslationUnit, filter FilterFunc) ([]Declaration, error) {
 		decls = append(decls, decl)
 	}
 
-	sort.Sort(byPosition(decls))
+	sort.Sort(byName(decls))
 
 	return decls, nil
 }

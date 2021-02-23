@@ -14,11 +14,11 @@ typedef enum fntype {
 	DOES_NOTHING = 1,
 } fntype_t;
 
-typedef int foo; 
+typedef int foo;
 typedef int context;
 
 void func1i(int* a);
-void func1f(foo a); 
+void func1f(foo a);
 void func1fp(foo* a);
 
 void func2i(int a, int b);
